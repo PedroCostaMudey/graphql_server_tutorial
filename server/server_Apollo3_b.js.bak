@@ -1,0 +1,55 @@
+//this is taken directly from thge apollo-server-express documentation as a template
+
+const { ApolloServer, gql } = require('apollo-server-express');
+const { ApolloServerPluginDrainHttpServer } = require('apollo-server-core');
+const express = require('express');
+const http = require('http');
+const expressJwt = require('express-jwt');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+
+const jwtSecret = Buffer.from('Zn8Q5tyZ/G1MHltc4F/gTkVJMlrbKiZt', 'base64');
+
+
+const typeDefs = gql`
+  type Query{
+    greeting: String
+  }
+`;
+
+const resolvers = {
+    Query : {
+    greeting: () => 'Hello!'
+  }
+};
+
+async function startApolloServer(typeDefs, resolvers) {
+  const app = express();
+  app.use(
+    cors(),
+    express.urlencoded({extended: true}),
+    express.json(),
+    expressJwt({
+      secret: jwtSecret,
+      credentialsRequired: false
+    })
+  );
+
+  const httpServer = http.createServer(app);
+  
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  });
+  
+  await server.start();
+  
+  server.applyMiddleware({ app });
+  
+  await new Promise(resolve => httpServer.listen({ port: 9000 }, resolve));
+  
+  console.log(`🚀 Server ready at http://localhost:9000${server.graphqlPath}`);
+}
+
+startApolloServer(typeDefs, resolvers);
