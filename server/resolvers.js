@@ -7,6 +7,7 @@ const Query = {
     //long form for debugging Object.values(Object.entries(db.jobs)[1])[1] 
     return db.jobs.list();
   },
+  company: (root, args) => db.companies.get(args.id),
   companies: () => db.companies.list(),
  
 };
@@ -14,5 +15,6 @@ const Query = {
 const Job = {
   company: (job) => db.companies.get(job.companyId),
 }
+
 
 module.exports = { Query, Job }
