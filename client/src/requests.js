@@ -1,8 +1,32 @@
+import { ApolloClient,ApolloLink, HttpLink, InMemoryCache } from 'apollo-boost';
+import { gql } from 'apollo-boost';
+import {isLoggedIn, getAccessToken} from './auth';
+
 const endpointURL = 'http://localhost:9000/graphql';
 
-const {isLoggedIn, getAccessToken} = require('./auth');
+//this is used to pass the authorization token to jwt in the server
+const authLink = new ApolloLink( (operation, forward) => {
+  if(isLoggedIn()){
+    operation.setContext({
+      //mind the space after Bearer
+      headers:{'authorization': 'Bearer ' + getAccessToken()}
+    });
+  }
+  return forward(operation);
+} );
 
-const graphqlRequest = async (query, variables = {}) => {
+
+const client = new ApolloClient({
+  link: ApolloLink.from([ 
+    authLink,
+    new HttpLink( { uri: endpointURL }) 
+    ]),
+  cache: new InMemoryCache(),
+});
+
+/*
+//used in the previous version to fetch but now is suplanted by the apollo-client
+export const graphqlRequest = async (query, variables = {}) => {
   const request = {
     method: 'POST',
     headers: {'content-type': 'application/json'},
@@ -29,29 +53,9 @@ const graphqlRequest = async (query, variables = {}) => {
 
   return responseBody.data;
 }
+*/
 
-// CREATE JOB (singular) from JobForms component
-const createJob = async (input) =>{
-  const mutation =`
-  mutation Mutation($input: CreateJobInput) {
-    createJob(input: $input) {
-      id
-      title
-      company {
-        id
-        name
-      }
-    }
-  }`;
-
-  const data = await graphqlRequest(mutation, {input})
-
-  return data.createJob
-}
-
-// LOAD JOB (sigular)
-const loadJob = async (id) => {
-  const query =  `
+const jobQuery =  gql`
   query Query($id: ID!) {
     job(id: $id) {
       id
@@ -65,14 +69,52 @@ const loadJob = async (id) => {
     }
   }`;
 
-  const data = await graphqlRequest(query,{id})
+// CREATE JOB (singular) from JobForms component
+export const createJob = async (input) =>{
+  const mutation =gql`
+  mutation Mutation($input: CreateJobInput) {
+    createJob(input: $input) {
+      id
+      title
+      description
+      company {
+        id
+        name
+        description
+      }
+    }
+  }`;
+
+  const {data} = await client.mutate({ 
+    mutation, 
+    variables: {input},
+    update: (cache, mutationResult) => { 
+      console.log('mutation result:', mutationResult) 
+      cache.writeQuery( {
+        query: jobQuery, 
+        variables:{ id: mutationResult.data.createJob.id },
+        data: mutationResult.data
+      } )
+    }
+  }); // with gql and apollo-client
+  //const data = await graphqlRequest(mutation, {input}) //old fetchbased
+
+  return data.createJob
+}
+
+// LOAD JOB (sigular)
+export const loadJob = async (id) => {
+  const query =  jobQuery;
+
+  const {data} = await client.query({query, variables: {id}}); // with gql and apollo-client
+  //const data = await graphqlRequest(query,{id}) //regular fetch based string based
 
   return data.job;
 }
 
 // LOAD JOBS (plural)
-const loadJobs = async () => {
-  const query =  `
+export const loadJobs = async () => {
+  const query =  gql`
     query Query{
       jobs{
         id
@@ -86,15 +128,16 @@ const loadJobs = async () => {
       }
     }
   `;
-  
-  const data = await graphqlRequest(query,{})
+
+  const {data} = await client.query({query, fetchPolicy:'no-cache'}); // with gql and apollo-client
+  //const data = await graphqlRequest(query,{}) //regular fetch based string based 
 
   return data.jobs;
 }
 
 // LOAD COMPANY (sigular)
-const loadCompany = async (id) => {
-  const query =  `
+export const loadCompany = async (id) => {
+  const query = gql`
   query Query($id: ID!) {
     company(id: $id) {
       id
@@ -109,10 +152,8 @@ const loadCompany = async (id) => {
   }
   `;
 
-  const data = await graphqlRequest(query,{id})
+  const {data} = await client.query({query, variables: {id}}); // with gql and apollo-client
+  //const data = await graphqlRequest(query,{id}) //regular fetch based string based
 
   return data.company;
 }
-
-
-module.exports = {createJob, loadJobs, loadJob, loadCompany};
