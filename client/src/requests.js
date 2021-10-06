@@ -72,6 +72,11 @@ const loadCompany = async (id) => {
       id
       name
       description
+      jobs{
+        id
+        title
+        description
+      }
     }
   }
   `;
