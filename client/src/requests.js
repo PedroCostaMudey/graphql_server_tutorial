@@ -1,14 +1,23 @@
 const endpointURL = 'http://localhost:9000/graphql';
 
+const {isLoggedIn, getAccessToken} = require('./auth');
+
 const graphqlRequest = async (query, variables = {}) => {
-  const response = await fetch(endpointURL, {
+  const request = {
     method: 'POST',
     headers: {'content-type': 'application/json'},
     body: JSON.stringify({
       query: query,
       variables: variables
     })
-  })
+  };
+
+  if(isLoggedIn()){
+    //console.log("Access Token: ",getAccessToken());
+    request.headers['authorization'] = 'Bearer ' + getAccessToken();
+  }
+
+  const response = await fetch(endpointURL, request )
   const responseBody = await response.json();
 
   if(responseBody.errors) {
@@ -19,6 +28,25 @@ const graphqlRequest = async (query, variables = {}) => {
   } 
 
   return responseBody.data;
+}
+
+// CREATE JOB (singular) from JobForms component
+const createJob = async (input) =>{
+  const mutation =`
+  mutation Mutation($input: CreateJobInput) {
+    createJob(input: $input) {
+      id
+      title
+      company {
+        id
+        name
+      }
+    }
+  }`;
+
+  const data = await graphqlRequest(mutation, {input})
+
+  return data.createJob
 }
 
 // LOAD JOB (sigular)
@@ -87,4 +115,4 @@ const loadCompany = async (id) => {
 }
 
 
-module.exports = {loadJobs, loadJob, loadCompany};
+module.exports = {createJob, loadJobs, loadJob, loadCompany};

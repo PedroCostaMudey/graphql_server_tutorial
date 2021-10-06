@@ -1,5 +1,5 @@
 // this server uses the Apollo 2.15 version please
-//confirm is the correct Apollo version is installed
+// confirm is the correct Apollo version is installed
 const fs = require('fs')
 
 const {ApolloServer, gql} = require('apollo-server-express')
@@ -30,12 +30,15 @@ app.use(
   })
 );
 
-const server = new ApolloServer({ typeDefs, resolvers });
+//function that using the req.user.sub
+const context = ({ req }) => ({ user: req.user && db.users.get(req.user.sub) });
+
+const server = new ApolloServer({ typeDefs, resolvers, context});
 
 server.applyMiddleware({ app, path:'/graphql' });
 
 app.post('/login', (req, res) => {
-  console.log(req);
+  //console.log(req);
   const {email, password} = req.body;
   const user = db.users.list().find((user) => user.email === email);
   if (!(user && user.password === password)) {
