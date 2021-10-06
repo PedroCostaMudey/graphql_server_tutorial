@@ -73,7 +73,7 @@ const jobQuery =  gql`
 export const createJob = async (input) =>{
   const mutation =gql`
   mutation Mutation($input: CreateJobInput) {
-    createJob(input: $input) {
+     job: createJob(input: $input) {
       id
       title
       description
@@ -92,14 +92,14 @@ export const createJob = async (input) =>{
       console.log('mutation result:', mutationResult) 
       cache.writeQuery( {
         query: jobQuery, 
-        variables:{ id: mutationResult.data.createJob.id },
+        variables:{ id: mutationResult.data.job.id },
         data: mutationResult.data
       } )
     }
   }); // with gql and apollo-client
   //const data = await graphqlRequest(mutation, {input}) //old fetchbased
 
-  return data.createJob
+  return data.job
 }
 
 // LOAD JOB (sigular)
