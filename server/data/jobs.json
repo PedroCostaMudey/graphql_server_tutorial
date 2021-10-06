@@ -16,5 +16,23 @@
     "companyId": "SJV0-wdOM",
     "title": "Full-Stack Developer",
     "description": "We are looking for a Full-Stack Developer familiar with Node.js, Express, and React."
+  },
+  {
+    "id": "HyJFeJiNY",
+    "companyId": "HJRa-DOuG",
+    "title": "Windows Cleaner",
+    "description": "Some one that can remove malware from Windows OS, permanent position good pay."
+  },
+  {
+    "id": "SJWYQyjEY",
+    "companyId": "HJRa-DOuG",
+    "title": "Linux Dependecies Patcher",
+    "description": "Some one that can manage linux dependecies and drivers to needed devices."
+  },
+  {
+    "id": "BypgwyjEK",
+    "companyId": "HJRa-DOuG",
+    "title": "Mac Repair Technician",
+    "description": "Someone to repair the bateries of Mac machines"
   }
 ]
