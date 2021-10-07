@@ -1,5 +1,5 @@
 const db = require('../../db/db.js');
-const { create_token } = require('../../util/generate_token')
+const { create_token } = require('../../util/generateToken')
 
 const login = ( (req, res) => {
 

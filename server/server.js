@@ -21,7 +21,7 @@ const jwtSecret = Buffer.from(process.env.HASH_KEY, process.env.HASH_BASE);
 
 
 const typeDefs = gql(fs.readFileSync('./models/schema.graphql', {encoding: 'utf8'}));
-const resolvers = require('./resolvers/job_board/job_board.js');
+const resolvers = require('./resolvers/job_board/jobBoard.js');
 
 
 const app = express();
