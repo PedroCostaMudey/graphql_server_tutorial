@@ -1,4 +1,4 @@
-const db = require('./db.js');
+const db = require('../../db/db');
 
 const Query = {
   job: (root, args) => db.jobs.get(args.id),
